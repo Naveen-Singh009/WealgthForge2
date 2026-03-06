@@ -1,6 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { AuthService } from '../../../core/services/auth.service';
 import { LoadingService } from '../../../core/services/loading.service';
@@ -12,16 +12,15 @@ import { ToastService } from '../../../core/services/toast.service';
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly loadingService = inject(LoadingService);
   private readonly toastService = inject(ToastService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   submitting = false;
-  otpRequired = false;
-  otpEmail = '';
   authMessage = '';
   authMessageVariant: 'danger' | 'warning' = 'danger';
 
@@ -30,9 +29,12 @@ export class LoginComponent {
     password: ['', [Validators.required, Validators.minLength(6)]],
   });
 
-  readonly otpForm = this.fb.nonNullable.group({
-    otp: ['', [Validators.required, Validators.pattern(/^\d{6}$/)]],
-  });
+  ngOnInit(): void {
+    const emailFromQuery = this.route.snapshot.queryParamMap.get('email')?.trim();
+    if (emailFromQuery) {
+      this.loginForm.controls.email.setValue(emailFromQuery);
+    }
+  }
 
   get email() {
     return this.loginForm.controls.email;
@@ -42,17 +44,8 @@ export class LoginComponent {
     return this.loginForm.controls.password;
   }
 
-  get otp() {
-    return this.otpForm.controls.otp;
-  }
-
   submit(): void {
     this.clearAuthMessage();
-
-    if (this.otpRequired) {
-      this.verifyOtp();
-      return;
-    }
 
     if (this.loginForm.invalid || this.submitting) {
       this.loginForm.markAllAsTouched();
@@ -65,18 +58,21 @@ export class LoginComponent {
     this.authService.login(this.loginForm.getRawValue()).subscribe({
       next: () => {
         this.clearAuthMessage();
+        this.authService.clearPendingOtpEmail();
         this.toastService.show('success', 'Login Successful', 'Welcome back to WealthForge Pro.');
         this.router.navigateByUrl(this.authService.getPostLoginRoute());
       },
       error: (error) => {
         const message = this.resolveLoginErrorMessage(error);
+        if (this.isOtpRequiredError(error, message)) {
+          const otpEmail = (error?.email ?? this.loginForm.controls.email.value ?? '').trim();
+          if (otpEmail) {
+            this.authService.setPendingOtpEmail(otpEmail);
+          }
 
-        if (error?.otpRequired || String(message).toLowerCase().includes('otp')) {
-          this.otpRequired = true;
-          this.otpEmail = error?.email ?? this.loginForm.controls.email.value;
-          this.otpForm.reset({ otp: '' });
           this.showAuthMessage(String(message), 'warning');
           this.toastService.show('warning', 'OTP Verification Required', String(message));
+          this.router.navigate(['/auth/otp']);
         } else {
           this.showAuthMessage(String(message), 'danger');
           this.toastService.show('error', 'Login Failed', String(message));
@@ -92,43 +88,18 @@ export class LoginComponent {
     });
   }
 
-  verifyOtp(): void {
-    this.clearAuthMessage();
-
-    if (this.otpForm.invalid || this.submitting) {
-      this.otpForm.markAllAsTouched();
-      return;
+  private isOtpRequiredError(error: unknown, message: string): boolean {
+    const typedError = error as { otpRequired?: unknown; error?: unknown };
+    if (typedError?.otpRequired === true) {
+      return true;
     }
 
-    this.submitting = true;
-    this.loadingService.show();
+    const errorBody = typedError?.error as { otpRequired?: unknown } | undefined;
+    if (errorBody?.otpRequired === true) {
+      return true;
+    }
 
-    this.authService.verifyLoginOtp({
-      email: this.otpEmail || this.loginForm.controls.email.value,
-      otp: this.otpForm.controls.otp.value,
-    }).subscribe({
-      next: () => {
-        this.clearAuthMessage();
-        this.toastService.show('success', 'Login Successful', 'OTP verified successfully.');
-        this.router.navigateByUrl(this.authService.getPostLoginRoute());
-      },
-      error: (error) => {
-        const message = this.extractErrorMessage(error, 'Invalid OTP. Please try again.');
-        this.showAuthMessage(String(message), 'danger');
-        this.toastService.show('error', 'OTP Verification Failed', String(message));
-      },
-      complete: () => {
-        this.loadingService.hide();
-        this.submitting = false;
-      },
-    });
-  }
-
-  backToPasswordLogin(): void {
-    this.otpRequired = false;
-    this.otpEmail = '';
-    this.otpForm.reset({ otp: '' });
-    this.clearAuthMessage();
+    return message.toLowerCase().includes('otp');
   }
 
   private resolveLoginErrorMessage(error: unknown): string {

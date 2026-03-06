@@ -13,4 +13,6 @@ public interface InvestorAllocationRepository
     List<InvestorAllocation> findByInvestorId(Long investorId);
 
     Optional<InvestorAllocation> findByAdvisorIdAndInvestorId(Long advisorId, Long investorId);
+
+    long deleteByAdvisorIdAndInvestorId(Long advisorId, Long investorId);
 }

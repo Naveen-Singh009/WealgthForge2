@@ -116,6 +116,12 @@
             <version>${jjwt.version}</version>
             <scope>runtime</scope>
         </dependency>
+        
+        <!-- Spring Cloud Feign (inter-service calls) -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-openfeign</artifactId>
+		</dependency>
 
         <!-- Testing -->
         <dependency>

@@ -75,6 +75,19 @@ public class AdvisorController {
                 request.getInvestorId());
     }
 
+    @DeleteMapping("/assign")
+    public String unassignInvestor(
+            @RequestParam Long advisorId,
+            @RequestParam Long investorId) {
+
+        boolean removed = service.unassignInvestor(advisorId, investorId);
+        if (removed) {
+            return "Advisor removed from investor successfully";
+        }
+
+        return "Advisor was not allocated for this investor";
+    }
+
     @GetMapping("/listInvestors/{advisorId}")
     public List<Long> listAdvised(@PathVariable Long advisorId) {
         return service.getAdvisedInvestors(advisorId);

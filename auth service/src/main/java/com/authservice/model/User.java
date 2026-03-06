@@ -40,7 +40,7 @@ public class User {
     private LocalDateTime createdAt;
     
     @Column(nullable = false)
-    private Boolean mfaEnabled = false;
+    private Boolean mfaEnabled = true;
 
     private String otp;
 

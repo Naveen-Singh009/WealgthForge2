@@ -22,6 +22,7 @@ export class AuthService {
   private readonly tokenKey = 'wf_token';
   private readonly roleKey = 'wf_role';
   private readonly userKey = 'wf_user';
+  private readonly pendingOtpEmailKey = 'wf_pending_otp_email';
 
   constructor(private readonly http: HttpClient, private readonly router: Router) {}
 
@@ -64,6 +65,7 @@ export class AuthService {
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.roleKey);
     localStorage.removeItem(this.userKey);
+    localStorage.removeItem(this.pendingOtpEmailKey);
 
     if (redirectToLogin) {
       this.router.navigate(['/login']);
@@ -72,6 +74,24 @@ export class AuthService {
 
   getToken(): string | null {
     return localStorage.getItem(this.tokenKey);
+  }
+
+  setPendingOtpEmail(email: string): void {
+    const normalizedEmail = email?.trim();
+    if (!normalizedEmail) {
+      localStorage.removeItem(this.pendingOtpEmailKey);
+      return;
+    }
+
+    localStorage.setItem(this.pendingOtpEmailKey, normalizedEmail);
+  }
+
+  getPendingOtpEmail(): string | null {
+    return localStorage.getItem(this.pendingOtpEmailKey);
+  }
+
+  clearPendingOtpEmail(): void {
+    localStorage.removeItem(this.pendingOtpEmailKey);
   }
 
   isLoggedIn(): boolean {
@@ -129,6 +149,7 @@ export class AuthService {
 
   private persistSession(response: AuthResponse): void {
     localStorage.setItem(this.tokenKey, response.token);
+    localStorage.removeItem(this.pendingOtpEmailKey);
 
     const role = response.user?.role
       ?? this.normalizeRoleClaim(response.role)

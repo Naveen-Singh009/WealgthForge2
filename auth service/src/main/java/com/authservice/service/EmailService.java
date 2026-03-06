@@ -22,4 +22,18 @@ public class EmailService {
         mailSender.send(message);
     }
 
+    public void sendRegistrationSuccess(String toEmail, String name, String role) {
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(toEmail);
+        message.setSubject("Registration Successful");
+        message.setText(String.format(
+                "Dear %s,%n%nYou have registered successfully.%n%nRole: %s%nEmail: %s%n%nRegards,%nWealthForge Pro",
+                name,
+                role,
+                toEmail));
+
+        mailSender.send(message);
+    }
+
 }

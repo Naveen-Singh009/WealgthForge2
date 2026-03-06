@@ -82,6 +82,12 @@ public class AdvisorService {
         return allocationRepo.save(allocation);
     }
 
+    @Transactional
+    public boolean unassignInvestor(Long advisorId, Long investorId) {
+        long deletedCount = allocationRepo.deleteByAdvisorIdAndInvestorId(advisorId, investorId);
+        return deletedCount > 0;
+    }
+
     public List<Long> getAdvisedInvestors(Long advisorId) {
         return adviceRepo.findByAdvisorId(advisorId)
                 .stream()

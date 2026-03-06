@@ -4,7 +4,9 @@ import com.authservice.dto.AuthResponse;
 import com.authservice.dto.AdminCreateUserRequest;
 import com.authservice.dto.LoginRequest;
 import com.authservice.dto.MessageResponse;
+import com.authservice.dto.NotificationRequest;
 import com.authservice.dto.RegisterRequest;
+import com.authservice.config.NotificationClient;
 import com.authservice.model.RoleType;
 import com.authservice.model.User;
 import com.authservice.repository.UserRepository;
@@ -33,6 +35,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
     private final EmailService emailService;
+    private final NotificationClient notificationClient;
     private final UserDetailsServiceImpl userDetailsService;
     private final InvestorProfileSyncService investorProfileSyncService;
     private final AdvisorProfileSyncService advisorProfileSyncService;
@@ -52,7 +55,7 @@ public class AuthService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(RoleType.INVESTOR)
                 .enabled(true)
-                .mfaEnabled(false)
+                .mfaEnabled(true)
                 .build();
 
         User savedUser = userRepository.save(user);
@@ -67,6 +70,8 @@ public class AuthService {
             userRepository.deleteById(savedUser.getId());
             throw new IllegalStateException("Registration failed while creating investor profile. Please retry.");
         }
+
+        sendRegistrationWithFallback(savedUser);
 
         return new MessageResponse("User registered successfully!");
     }
@@ -87,7 +92,7 @@ public class AuthService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(request.getRole())
                 .enabled(true)
-                .mfaEnabled(false)
+                .mfaEnabled(true)
                 .build();
 
         User savedUser = userRepository.save(user);
@@ -107,6 +112,8 @@ public class AuthService {
             throw new IllegalStateException("User creation failed while syncing profile. Please retry.");
         }
 
+        sendRegistrationWithFallback(savedUser);
+
         return new MessageResponse("User created successfully with role: " + savedUser.getRole());
     }
 
@@ -120,13 +127,22 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow();
 
+        boolean shouldUseMfa = Boolean.TRUE.equals(user.getMfaEnabled());
+        if (!shouldUseMfa && user.getRole() == RoleType.INVESTOR) {
+            // Auto-migrate older investor accounts created before MFA was enabled by default.
+            user.setMfaEnabled(true);
+            userRepository.save(user);
+            shouldUseMfa = true;
+        }
+
         // IF MFA ENABLED -> SEND OTP
-        if (user.getMfaEnabled()) {
+        if (shouldUseMfa) {
             String otp = String.valueOf((int)(Math.random() * 900000) + 100000);
             user.setOtp(otp);
             user.setOtpExpiry(LocalDateTime.now().plusMinutes(5));
             userRepository.save(user);
-            emailService.sendOtp(user.getEmail(), otp);
+
+            sendOtpWithFallback(user, otp);
             return new MessageResponse("OTP sent to email. Verify to complete login.");
         }
 
@@ -180,5 +196,48 @@ public class AuthService {
     public MessageResponse logout() {
         SecurityContextHolder.clearContext();
         return new MessageResponse("Logged out successfully. Remove token from client.");
+    }
+
+    private void sendOtpWithFallback(User user, String otp) {
+        NotificationRequest request = new NotificationRequest();
+        request.setEmail(user.getEmail());
+        request.setInvestorName(user.getName());
+        request.setTransactionType(user.getRole().name());
+        request.setOtp(otp);
+        request.setType("OTP");
+
+        try {
+            notificationClient.sendOtp(request);
+            return;
+        } catch (Exception ignored) {
+            // Fallback to direct SMTP sender if notification-service is unavailable.
+        }
+
+        try {
+            emailService.sendOtp(user.getEmail(), otp);
+        } catch (Exception mailError) {
+            throw new IllegalStateException("Unable to send OTP email right now. Please try again.");
+        }
+    }
+
+    private void sendRegistrationWithFallback(User user) {
+        NotificationRequest request = new NotificationRequest();
+        request.setEmail(user.getEmail());
+        request.setInvestorName(user.getName());
+        request.setTransactionType(user.getRole().name());
+        request.setType("REGISTRATION");
+
+        try {
+            notificationClient.sendRegistration(request);
+            return;
+        } catch (Exception ignored) {
+            // Fallback to direct SMTP sender if notification-service is unavailable.
+        }
+
+        try {
+            emailService.sendRegistrationSuccess(user.getEmail(), user.getName(), user.getRole().name());
+        } catch (Exception ignored) {
+            // Registration is complete; email is best-effort.
+        }
     }
 }

@@ -40,7 +40,7 @@ export class RegisterComponent {
 
     this.authService.register(this.registerForm.getRawValue()).subscribe({
       next: () => {
-        this.toastService.show('success', 'Registration Successful', 'Account created. Please login.');
+        this.toastService.show('success', 'Registration Successful', 'Account created. Check your email notification, then login.');
         this.router.navigateByUrl('/login');
       },
       error: () => {
