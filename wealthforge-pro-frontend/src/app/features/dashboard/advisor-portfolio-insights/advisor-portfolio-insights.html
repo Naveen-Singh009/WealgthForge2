@@ -1,0 +1,85 @@
+<section>
+  <div class="wf-page-title">
+    <div>
+      <h2>Portfolio Insights</h2>
+      <p>Analyze portfolios for investors mapped to your advisory profile.</p>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-md-4">
+      <app-reusable-card
+        title="Assigned Investors"
+        [value]="assignedInvestorCountValue"
+        [subtitle]="mappedAdvisor ? ('Advisor: ' + mappedAdvisor.name) : 'No advisor mapping found'"
+        icon="bi-people-fill">
+      </app-reusable-card>
+    </div>
+    <div class="col-md-4">
+      <app-reusable-card
+        title="Tracked Portfolios"
+        [value]="trackedPortfolioCountValue"
+        [subtitle]="trackedPortfolioBalanceValue + ' total balance (' + analysisScopeLabel + ')'"
+        icon="bi-briefcase-fill">
+      </app-reusable-card>
+    </div>
+    <div class="col-md-4">
+      <app-reusable-card
+        title="Investors Without Portfolio"
+        [value]="investorsWithoutPortfolioValue"
+        subtitle="Need onboarding support"
+        icon="bi-person-exclamation">
+      </app-reusable-card>
+    </div>
+  </div>
+
+  <div class="wf-card mt-3">
+    <div class="row g-3 align-items-end">
+      <div class="col-12 col-md-6 col-lg-5">
+        <label class="form-label" for="investorFilter">Investor</label>
+        <select
+          id="investorFilter"
+          class="form-select"
+          [value]="selectedInvestorId"
+          (change)="onInvestorFilterChange($any($event.target).value)">
+          <option [value]="0">All Assigned Investors</option>
+          <option *ngFor="let investor of assignedInvestors" [value]="investor.investorId">
+            {{ investor.investorName }} ({{ investor.investorId }})
+          </option>
+        </select>
+      </div>
+      <div class="col-12 col-md-6 col-lg-7">
+        <div class="insight-scope-text">Showing portfolio analysis for {{ analysisScopeLabel }}.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wf-card mt-3">
+    <h5 class="mb-3">Investor Portfolio Analysis</h5>
+    <div class="table-responsive">
+      <table class="table wf-table">
+        <thead>
+          <tr>
+            <th>Investor</th>
+            <th>Email</th>
+            <th>Portfolio</th>
+            <th>Balance</th>
+            <th>Created</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of filteredPortfolioRows">
+            <td>{{ row.investorName }} ({{ row.investorId }})</td>
+            <td>{{ row.investorEmail }}</td>
+            <td>{{ row.portfolioName }}</td>
+            <td>{{ row.balance | currency: 'INR': 'symbol':'1.0-0' }}</td>
+            <td>{{ row.createdAt ? (row.createdAt | date: 'mediumDate') : '--' }}</td>
+          </tr>
+          <tr *ngIf="filteredPortfolioRows.length === 0">
+            <td colspan="5" class="text-center text-muted py-4">No portfolio insights available for assigned investors.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>

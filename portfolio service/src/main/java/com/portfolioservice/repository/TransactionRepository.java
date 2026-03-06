@@ -1,0 +1,19 @@
+package com.portfolioservice.repository;
+
+import com.portfolioservice.model.Transaction;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface TransactionRepository extends JpaRepository<Transaction, Long> {
+
+    List<Transaction> findByPortfolioIdOrderByTimestampDesc(Long portfolioId);
+
+    List<Transaction> findByPortfolioIdOrderByTimestampAsc(Long portfolioId);
+
+    List<Transaction> findByPortfolioIdInOrderByTimestampDesc(List<Long> portfolioIds);
+
+    void deleteByPortfolioId(Long portfolioId);
+}

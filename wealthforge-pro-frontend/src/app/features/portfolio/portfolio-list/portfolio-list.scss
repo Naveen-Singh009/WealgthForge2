@@ -1,0 +1,53 @@
+th[role='button'] {
+  cursor: pointer;
+}
+
+.portfolio-link {
+  color: #0d6efd;
+}
+
+.portfolio-link:hover {
+  color: #0a58ca;
+}
+
+.pager {
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  padding-top: 0.8rem;
+}
+
+.payment-history-modal {
+  background: linear-gradient(145deg, #1f2731, #151d29);
+  color: #f8f9fa;
+}
+
+.payment-history-table {
+  --bs-table-bg: transparent;
+  --bs-table-color: #f8f9fa;
+  --bs-table-striped-bg: rgba(255, 255, 255, 0.03);
+  --bs-table-striped-color: #f8f9fa;
+  --bs-table-border-color: rgba(255, 255, 255, 0.08);
+}
+
+.payment-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  min-width: 78px;
+  padding: 0.25rem 0.65rem;
+}
+
+.status-pending {
+  background-color: rgba(255, 193, 7, 0.18);
+  color: #ffd761;
+  border: 1px solid rgba(255, 193, 7, 0.35);
+}
+
+.status-done {
+  background-color: rgba(25, 135, 84, 0.16);
+  color: #6fe3ac;
+  border: 1px solid rgba(25, 135, 84, 0.4);
+}

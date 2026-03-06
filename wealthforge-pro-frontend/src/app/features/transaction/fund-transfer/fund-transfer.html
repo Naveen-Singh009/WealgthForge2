@@ -1,0 +1,58 @@
+<section class="wf-card transfer-panel">
+  <div class="wf-page-title mb-3">
+    <div>
+      <h2>Transfer Funds</h2>
+      <p>Move available cash from one portfolio to another.</p>
+    </div>
+    <a class="btn btn-outline-light" routerLink="/investor/portfolio">View Portfolios</a>
+  </div>
+
+  <div class="alert alert-warning mb-3" *ngIf="!canTransfer">
+    You need at least two portfolios before you can transfer funds.
+  </div>
+
+  <form [formGroup]="transferForm" (ngSubmit)="submit()" class="row g-3" novalidate>
+    <div class="col-md-4">
+      <label class="form-label" for="fromPortfolio">From Portfolio</label>
+      <select id="fromPortfolio" class="form-select" formControlName="fromPortfolioId">
+        <option [ngValue]="0" disabled *ngIf="portfolios.length === 0">No portfolio available</option>
+        <option *ngFor="let portfolio of portfolios" [ngValue]="portfolio.id">
+          {{ portfolio.name }} (#{{ portfolio.id }}) - {{ portfolio.balance | currency:'INR':'symbol':'1.2-2' }}
+        </option>
+      </select>
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label" for="toPortfolio">To Portfolio</label>
+      <select id="toPortfolio" class="form-select" formControlName="toPortfolioId">
+        <option [ngValue]="0" disabled *ngIf="portfolios.length === 0">No portfolio available</option>
+        <option
+          *ngFor="let portfolio of portfolios"
+          [ngValue]="portfolio.id"
+          [disabled]="portfolio.id === transferForm.controls.fromPortfolioId.value"
+        >
+          {{ portfolio.name }} (#{{ portfolio.id }}) - {{ portfolio.balance | currency:'INR':'symbol':'1.2-2' }}
+        </option>
+      </select>
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label" for="transferAmount">Amount</label>
+      <input
+        id="transferAmount"
+        type="number"
+        class="form-control"
+        formControlName="amount"
+        min="0.01"
+        step="0.01"
+      />
+    </div>
+
+    <div class="col-12 d-flex gap-2">
+      <button class="btn btn-emerald" type="submit" [disabled]="submitting || !canTransfer">
+        {{ submitting ? 'Transferring...' : 'Transfer Funds' }}
+      </button>
+      <a class="btn btn-outline-primary" routerLink="/investor/buy-sell">Go to Buy / Sell</a>
+    </div>
+  </form>
+</section>

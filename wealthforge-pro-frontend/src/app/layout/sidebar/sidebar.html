@@ -1,0 +1,123 @@
+<aside class="left-nav">
+  <ul class="menu-list">
+    <ng-container *ngIf="role === 'ADMIN'">
+      <li>
+        <a routerLink="/dashboard/admin" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+          <i class="bi bi-grid-1x2-fill"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/admin/portfolios" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+          <i class="bi bi-briefcase-fill"></i>
+          <span>All Portfolios</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/stocks" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+          <i class="bi bi-bar-chart-line-fill"></i>
+          <span>Manage Stocks</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/advisor" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+          <i class="bi bi-person-workspace"></i>
+          <span>Advisors</span>
+        </a>
+      </li>
+    </ng-container>
+
+    <ng-container *ngIf="role === 'INVESTOR'">
+      <li>
+        <a routerLink="/dashboard/investor" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+          <i class="bi bi-grid-1x2-fill"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/portfolio" routerLinkActive="active">
+          <i class="bi bi-briefcase-fill"></i>
+          <span>My Portfolio</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/stocks" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+          <i class="bi bi-bar-chart-line-fill"></i>
+          <span>Market Stocks</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/transaction/trade" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+          <i class="bi bi-arrow-left-right"></i>
+          <span>Buy/Sell</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/transaction/transfer" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+          <i class="bi bi-arrow-down-up"></i>
+          <span>Transfer Funds</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/transaction" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+          <i class="bi bi-receipt-cutoff"></i>
+          <span>Transactions</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/investor/chat-advisor" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+          <i class="bi bi-chat-dots-fill"></i>
+          <span>Chat with Advisor</span>
+        </a>
+      </li>
+    </ng-container>
+
+    <ng-container *ngIf="role === 'ADVISOR'">
+      <li>
+        <a routerLink="/dashboard/advisor" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+          <i class="bi bi-grid-1x2-fill"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/advisor" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+          <i class="bi bi-people-fill"></i>
+          <span>Assigned Investors</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/dashboard/advisor/portfolio-insights" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+          <i class="bi bi-graph-up-arrow"></i>
+          <span>Portfolio Insights</span>
+        </a>
+      </li>
+    </ng-container>
+  </ul>
+
+  <section class="sidebar-profile" [class.open]="isProfileExpanded">
+    <button class="profile-toggle" type="button" (click)="toggleProfile()">
+      <span class="profile-avatar">
+        {{ profileName.charAt(0) | uppercase }}
+      </span>
+      <div class="profile-meta">
+        <strong>{{ profileName }}</strong>
+        <small>View profile</small>
+      </div>
+      <i class="bi" [ngClass]="isProfileExpanded ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+    </button>
+
+    <div class="profile-details" *ngIf="isProfileExpanded">
+      <div class="profile-detail-row">
+        <span>Email</span>
+        <strong>{{ profileEmail }}</strong>
+      </div>
+
+      <div class="profile-role">{{ roleLabel }}</div>
+
+      <button class="btn btn-outline-light btn-sm w-100" type="button" (click)="logout()">
+        <i class="bi bi-box-arrow-right"></i>
+        Logout
+      </button>
+    </div>
+  </section>
+</aside>

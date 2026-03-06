@@ -1,0 +1,13 @@
+# Ignore local tools and logs
+.tools/
+.run-logs/
+
+# Node modules
+node_modules/
+
+# Build folders
+target/
+dist/
+
+# Logs
+*.log
