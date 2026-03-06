@@ -3,6 +3,9 @@
     <h2>Sign In</h2>
     <p *ngIf="!otpRequired">Access your secure investment workspace.</p>
     <p *ngIf="otpRequired">Enter the 6-digit OTP sent to {{ otpEmail || email.value }}.</p>
+    <div class="alert py-2 mb-3" [ngClass]="authMessageVariant === 'warning' ? 'alert-warning' : 'alert-danger'" *ngIf="authMessage">
+      {{ authMessage }}
+    </div>
 
     <form [formGroup]="loginForm" (ngSubmit)="submit()" novalidate *ngIf="!otpRequired">
       <div class="mb-3">
@@ -49,4 +52,3 @@
     </div>
   </div>
 </div>
-

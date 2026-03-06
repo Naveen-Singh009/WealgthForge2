@@ -1,3 +1,16 @@
-﻿:host {
+:host {
   display: block;
+}
+
+.filter-apply-btn {
+  color: #334155;
+  border-color: #64748b;
+  font-weight: 600;
+}
+
+.filter-apply-btn:hover,
+.filter-apply-btn:focus-visible {
+  color: #1e293b;
+  background-color: #e2e8f0;
+  border-color: #475569;
 }

@@ -35,6 +35,22 @@ export class AdvisorService {
     );
   }
 
+  deallocateAdvisor(payload: AllocateAdvisorRequest): Observable<ApiResponse<void>> {
+    return this.http.delete(`${this.apiBaseUrl}/advisor/assign`, {
+      params: {
+        advisorId: payload.advisorId,
+        investorId: payload.investorId,
+      },
+      responseType: 'text',
+    }).pipe(
+      map((message) => ({
+        success: true,
+        message: message || 'Advisor removed',
+        data: undefined,
+      }))
+    );
+  }
+
   getAllocatedAdvisorIds(investorId: number): Observable<number[]> {
     return this.http.get<number[]>(`${this.apiBaseUrl}/advisor/list/investor/${investorId}`).pipe(
       map((advisorIds) => {

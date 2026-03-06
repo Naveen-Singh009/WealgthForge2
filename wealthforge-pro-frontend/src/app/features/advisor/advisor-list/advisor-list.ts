@@ -37,6 +37,7 @@ export class AdvisorListComponent implements OnInit {
   activeChatAdvisor: Advisor | null = null;
   advisorChatHistory: Record<number, ChatMessage[]> = {};
   isAdvisorTyping = false;
+  removingAdvisorId: number | null = null;
 
   readonly allocationForm = this.fb.nonNullable.group({
     advisorId: [0, [Validators.required, Validators.min(1)]],
@@ -191,6 +192,43 @@ export class AdvisorListComponent implements OnInit {
 
   isAllocated(advisorId: number): boolean {
     return this.allocatedAdvisorIds.includes(advisorId);
+  }
+
+  removeAdvisor(advisorId: number): void {
+    if (!this.isInvestor || this.removingAdvisorId === advisorId) {
+      return;
+    }
+
+    const investorId = this.authService.getCurrentUserId();
+    if (!investorId) {
+      this.toastService.show('error', 'Remove Failed', 'Investor profile is unavailable.');
+      return;
+    }
+
+    this.removingAdvisorId = advisorId;
+    this.loadingService.show();
+
+    this.advisorService.deallocateAdvisor({ advisorId, investorId }).subscribe({
+      next: () => {
+        this.allocatedAdvisorIds = this.allocatedAdvisorIds.filter((id) => id !== advisorId);
+        if (this.activeChatAdvisor?.id === advisorId) {
+          this.exitChat();
+        }
+
+        if (Number(this.allocationForm.controls.advisorId.value) === advisorId) {
+          this.allocationForm.controls.advisorId.setValue(0);
+        }
+
+        this.toastService.show('success', 'Advisor Removed', 'Advisor removed from your allocation list.');
+      },
+      error: () => {
+        this.toastService.show('error', 'Remove Failed', 'Unable to remove selected advisor.');
+      },
+      complete: () => {
+        this.loadingService.hide();
+        this.removingAdvisorId = null;
+      },
+    });
   }
 
   exitChat(): void {

@@ -39,6 +39,7 @@
             <th>Email</th>
             <th>Phone</th>
             <th>Status</th>
+            <th class="text-end">Action</th>
           </tr>
         </thead>
         <tbody>
@@ -47,6 +48,16 @@
             <td>{{ advisor.email }}</td>
             <td>{{ advisor.phone }}</td>
             <td><span class="badge text-bg-success">Allocated</span></td>
+            <td class="text-end">
+              <button
+                class="btn btn-outline-danger btn-sm"
+                type="button"
+                (click)="removeAdvisor(advisor.id)"
+                [disabled]="removingAdvisorId === advisor.id"
+              >
+                {{ removingAdvisorId === advisor.id ? 'Removing...' : 'Remove' }}
+              </button>
+            </td>
           </tr>
         </tbody>
       </table>

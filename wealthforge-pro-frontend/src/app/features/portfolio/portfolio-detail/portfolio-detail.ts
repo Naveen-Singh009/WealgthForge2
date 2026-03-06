@@ -94,8 +94,8 @@ export class PortfolioDetailComponent implements OnInit {
     this.showSellModal = true;
   }
 
-  closeSellModal(): void {
-    if (this.sellSubmitting) {
+  closeSellModal(forceClose = false): void {
+    if (this.sellSubmitting && !forceClose) {
       return;
     }
 
@@ -133,7 +133,7 @@ export class PortfolioDetailComponent implements OnInit {
     }).subscribe({
       next: () => {
         this.toastService.show('success', 'Sell Order Sent', 'Stock sell request was submitted.');
-        this.closeSellModal();
+        this.closeSellModal(true);
       },
       error: () => {
         this.toastService.show('error', 'Sell Failed', 'Unable to sell stock at this time.');
