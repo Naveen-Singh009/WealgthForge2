@@ -2,6 +2,7 @@ package com.authservice.service;
 
 import com.authservice.dto.AuthResponse;
 import com.authservice.dto.AdminCreateUserRequest;
+import com.authservice.dto.CurrentUserResponse;
 import com.authservice.dto.LoginRequest;
 import com.authservice.dto.MessageResponse;
 import com.authservice.dto.NotificationRequest;
@@ -154,7 +155,7 @@ public class AuthService {
         String jwt = jwtUtils.generateToken(userDetails, user.getId());
         String role = userDetails.getAuthorities().iterator().next().getAuthority();
 
-        return new AuthResponse(jwt, request.getEmail(), role);
+        return new AuthResponse(jwt, request.getEmail(), role, user.getName());
     }
 
     // VERIFY LOGIN OTP (STEP 2)
@@ -181,7 +182,7 @@ public class AuthService {
         String jwt = jwtUtils.generateToken(userDetails, user.getId());
         String role = userDetails.getAuthorities().iterator().next().getAuthority();
 
-        return new AuthResponse(jwt, email, role);
+        return new AuthResponse(jwt, email, role, user.getName());
     }
 
     // ENABLE / DISABLE MFA
@@ -190,6 +191,18 @@ public class AuthService {
         user.setMfaEnabled(enable);
         userRepository.save(user);
         return new MessageResponse("MFA updated");
+    }
+
+    public CurrentUserResponse getCurrentUserProfile(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return CurrentUserResponse.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .role(user.getRole().name())
+                .build();
     }
 
     // LOGOUT

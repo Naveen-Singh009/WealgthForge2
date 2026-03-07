@@ -34,6 +34,14 @@ export interface AuthResponse {
   type?: string;
   email?: string;
   role?: string;
+  name?: string;
   expiresIn?: number;
   user?: CurrentUser;
+}
+
+export interface CurrentUserProfileResponse {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
 }

@@ -90,7 +90,17 @@ export class BuySellComponent implements OnInit {
     });
   }
 
+  normalizeQuantity(): void {
+    const control = this.tradeForm.controls.quantity;
+    const quantity = Number(control.value);
+    if (!Number.isFinite(quantity) || quantity < 1) {
+      control.setValue(1);
+    }
+  }
+
   submit(): void {
+    this.normalizeQuantity();
+
     if (this.tradeForm.invalid || this.submitting) {
       this.tradeForm.markAllAsTouched();
       return;

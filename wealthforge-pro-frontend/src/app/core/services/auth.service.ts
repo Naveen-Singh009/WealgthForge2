@@ -8,6 +8,7 @@ import {
   AdminCreateUserRequest,
   AuthRequest,
   AuthResponse,
+  CurrentUserProfileResponse,
   MessageResponse,
   RegisterRequest,
   VerifyOtpRequest,
@@ -145,6 +146,29 @@ export class AuthService {
 
   hasRole(role: UserRole): boolean {
     return this.getRole() === role;
+  }
+
+  refreshCurrentUserProfile(): Observable<CurrentUser> {
+    return this.http.get<CurrentUserProfileResponse>(`${this.authBaseUrl}/auth/me`).pipe(
+      map((profile) => {
+        const resolvedRole = this.normalizeRoleClaim(profile.role) ?? this.getRole();
+        if (!resolvedRole) {
+          throw new Error('Unable to resolve current user role.');
+        }
+
+        const user: CurrentUser = {
+          id: Number(profile.id),
+          name: profile.name?.trim() || 'User',
+          email: profile.email?.trim() || '',
+          role: resolvedRole,
+        };
+
+        localStorage.setItem(this.userKey, JSON.stringify(user));
+        localStorage.setItem(this.roleKey, resolvedRole);
+
+        return user;
+      })
+    );
   }
 
   private persistSession(response: AuthResponse): void {
@@ -285,7 +309,18 @@ export class AuthService {
   }
 
   private normalizeAuthResponse(response: AuthResponse, fallbackEmail: string): AuthResponse {
+    const responseName = response.name?.trim();
+
     if (response.user) {
+      if (responseName && response.user.name !== responseName) {
+        return {
+          ...response,
+          user: {
+            ...response.user,
+            name: responseName,
+          },
+        };
+      }
       return response;
     }
 
@@ -301,7 +336,7 @@ export class AuthService {
       id: derivedId,
       email,
       role: derivedRole,
-      name: email.split('@')[0],
+      name: responseName || 'User',
     };
 
     return {

@@ -1,7 +1,8 @@
 package com.authservice.controller;
 
-import com.authservice.dto.AuthResponse;
 import com.authservice.dto.AdminCreateUserRequest;
+import com.authservice.dto.AuthResponse;
+import com.authservice.dto.CurrentUserResponse;
 import com.authservice.dto.LoginRequest;
 import com.authservice.dto.MessageResponse;
 import com.authservice.dto.RegisterRequest;
@@ -22,43 +23,42 @@ public class AuthController {
 
     private final AuthService authService;
 
-    // ─── POST /auth/register ───────────────────────────────
     @PostMapping("/register")
-    public ResponseEntity<MessageResponse> register(
-            @Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<MessageResponse> register(@Valid @RequestBody RegisterRequest request) {
         return ResponseEntity.status(201)
                 .body(authService.register(request));
     }
 
     @PostMapping("/api/admin/users")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<MessageResponse> createUserByAdmin(
-            @Valid @RequestBody AdminCreateUserRequest request) {
+    public ResponseEntity<MessageResponse> createUserByAdmin(@Valid @RequestBody AdminCreateUserRequest request) {
         return ResponseEntity.status(201)
                 .body(authService.createUserByAdmin(request));
     }
 
-    // ─── POST /auth/login ───────────────────────────────────
-    // May return JWT OR OTP message
     @PostMapping("/login")
-    public ResponseEntity<?> login(
-            @Valid @RequestBody LoginRequest request) {
-
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
         Object response = authService.login(request);
-
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/verify-login-otp")
-    public ResponseEntity<AuthResponse> verifyLoginOtp(
-            @RequestBody VerifyOtpRequest request) {
-
+    public ResponseEntity<AuthResponse> verifyLoginOtp(@RequestBody VerifyOtpRequest request) {
         return ResponseEntity.ok(
                 authService.verifyLoginOtp(request.getEmail(), request.getOtp())
         );
     }
 
-    // ─── POST /auth/mfa ────────────────────────────────────
+    @GetMapping("/me")
+    public ResponseEntity<CurrentUserResponse> me(Authentication authentication) {
+        String email = authentication != null ? authentication.getName() : null;
+        if (!StringUtils.hasText(email)) {
+            throw new IllegalArgumentException("Authentication is required");
+        }
+
+        return ResponseEntity.ok(authService.getCurrentUserProfile(email));
+    }
+
     @PostMapping("/mfa")
     public ResponseEntity<MessageResponse> toggleMfa(
             Authentication authentication,
@@ -73,7 +73,6 @@ public class AuthController {
                 authService.toggleMfa(targetEmail, enable));
     }
 
-    // ─── POST /auth/logout ─────────────────────────────────
     @PostMapping("/logout")
     public ResponseEntity<MessageResponse> logout() {
         return ResponseEntity.ok(authService.logout());

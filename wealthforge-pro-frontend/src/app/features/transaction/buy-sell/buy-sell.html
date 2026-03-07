@@ -32,7 +32,16 @@
 
     <div class="col-md-6">
       <label class="form-label" for="tradeQty">Quantity</label>
-      <input id="tradeQty" type="number" class="form-control" formControlName="quantity" />
+      <input
+        id="tradeQty"
+        type="number"
+        class="form-control"
+        formControlName="quantity"
+        min="1"
+        step="1"
+        (change)="normalizeQuantity()"
+        (blur)="normalizeQuantity()"
+      />
     </div>
 
     <div class="col-12 d-flex gap-2">

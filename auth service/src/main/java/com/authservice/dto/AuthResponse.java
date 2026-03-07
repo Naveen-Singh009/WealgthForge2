@@ -16,11 +16,20 @@ public class AuthResponse {
     private String type = "Bearer";
     private String email;
     private String role;
+    private String name;
 
     public AuthResponse(String token, String email, String role) {
         this.token = token;
         this.type = "Bearer";
         this.email = email;
         this.role = role;
+    }
+
+    public AuthResponse(String token, String email, String role, String name) {
+        this.token = token;
+        this.type = "Bearer";
+        this.email = email;
+        this.role = role;
+        this.name = name;
     }
 }
