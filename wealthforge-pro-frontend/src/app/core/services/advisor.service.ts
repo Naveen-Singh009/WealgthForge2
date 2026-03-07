@@ -17,11 +17,19 @@ export class AdvisorService {
 
   getAdvisors(): Observable<ApiResponse<Advisor[]>> {
     return this.http.get<Advisor[]>(`${this.apiBaseUrl}/advisor/list/all`).pipe(
-      map((advisors) => ({
+      map((advisors) => {
+        const sortedAdvisors = [...(advisors ?? [])].sort((first, second) => {
+          const firstId = Number(first?.id ?? 0);
+          const secondId = Number(second?.id ?? 0);
+          return secondId - firstId;
+        });
+
+        return {
         success: true,
         message: 'Advisors loaded',
-        data: advisors ?? [],
-      }))
+        data: sortedAdvisors,
+      };
+      })
     );
   }
 

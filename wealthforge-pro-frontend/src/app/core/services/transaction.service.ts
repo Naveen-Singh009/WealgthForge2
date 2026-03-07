@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
@@ -42,8 +42,16 @@ export class TransactionService {
     );
   }
 
-  getInvestorTransactions(_investorId?: number, _fromDate?: string, _toDate?: string): Observable<ApiResponse<Transaction[]>> {
-    return this.http.get<ApiResponse<Transaction[]>>(`${this.apiBaseUrl}/investor/history`);
+  getInvestorTransactions(_investorId?: number, fromDate?: string, toDate?: string): Observable<ApiResponse<Transaction[]>> {
+    let params = new HttpParams();
+
+    if (fromDate) {
+      params = params.set('fromDate', fromDate);
+    }
+    if (toDate) {
+      params = params.set('toDate', toDate);
+    }
+
+    return this.http.get<ApiResponse<Transaction[]>>(`${this.apiBaseUrl}/investor/history`, { params });
   }
 }
-

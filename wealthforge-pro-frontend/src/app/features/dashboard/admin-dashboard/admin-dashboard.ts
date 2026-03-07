@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
+import { finalize } from 'rxjs';
 
 import { AuthService } from '../../../core/services/auth.service';
 import { LoadingService } from '../../../core/services/loading.service';
@@ -72,7 +73,12 @@ export class AdminDashboardComponent implements OnInit {
       password: this.createUserForm.controls.password.value,
       role,
       phone: role === 'ADVISOR' ? phone : undefined,
-    }).subscribe({
+    }).pipe(
+      finalize(() => {
+        this.loadingService.hide();
+        this.submitting = false;
+      })
+    ).subscribe({
       next: (response) => {
         this.toastService.show('success', 'User Created', response.message);
         this.createUserForm.reset({
@@ -87,10 +93,6 @@ export class AdminDashboardComponent implements OnInit {
         const message = error?.error?.message ?? 'Unable to create user.';
         this.toastService.show('error', 'Create Failed', message);
       },
-      complete: () => {
-        this.loadingService.hide();
-        this.submitting = false;
-      },
     });
   }
 
@@ -98,4 +100,3 @@ export class AdminDashboardComponent implements OnInit {
     return this.createUserForm.controls.role.value === 'ADVISOR';
   }
 }
-

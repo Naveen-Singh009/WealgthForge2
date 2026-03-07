@@ -128,8 +128,8 @@ public class AuthService {
                 .orElseThrow();
 
         boolean shouldUseMfa = Boolean.TRUE.equals(user.getMfaEnabled());
-        if (!shouldUseMfa && user.getRole() == RoleType.INVESTOR) {
-            // Auto-migrate older investor accounts created before MFA was enabled by default.
+        if (!shouldUseMfa && (user.getRole() == RoleType.INVESTOR || user.getRole() == RoleType.ADVISOR)) {
+            // Auto-migrate older investor/advisor accounts created before MFA was enabled by default.
             user.setMfaEnabled(true);
             userRepository.save(user);
             shouldUseMfa = true;

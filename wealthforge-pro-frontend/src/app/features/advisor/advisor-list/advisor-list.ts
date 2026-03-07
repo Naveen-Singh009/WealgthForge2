@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { finalize, map, of, switchMap, timer } from 'rxjs';
 
@@ -22,7 +22,7 @@ interface ChatMessage {
   templateUrl: './advisor-list.html',
   styleUrl: './advisor-list.scss',
 })
-export class AdvisorListComponent implements OnInit {
+export class AdvisorListComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly advisorService = inject(AdvisorService);
@@ -38,6 +38,8 @@ export class AdvisorListComponent implements OnInit {
   advisorChatHistory: Record<number, ChatMessage[]> = {};
   isAdvisorTyping = false;
   removingAdvisorId: number | null = null;
+  private advisorsAutoRefreshTimer: ReturnType<typeof setInterval> | null = null;
+  private loadingAdvisors = false;
 
   readonly allocationForm = this.fb.nonNullable.group({
     advisorId: [0, [Validators.required, Validators.min(1)]],
@@ -50,10 +52,25 @@ export class AdvisorListComponent implements OnInit {
   ngOnInit(): void {
     this.userRole = this.authService.getRole();
     this.loadAdvisors();
+    this.startAutoRefresh();
   }
 
-  loadAdvisors(): void {
-    this.loadingService.show();
+  ngOnDestroy(): void {
+    if (this.advisorsAutoRefreshTimer) {
+      clearInterval(this.advisorsAutoRefreshTimer);
+      this.advisorsAutoRefreshTimer = null;
+    }
+  }
+
+  loadAdvisors(showLoader = true): void {
+    if (this.loadingAdvisors) {
+      return;
+    }
+
+    this.loadingAdvisors = true;
+    if (showLoader) {
+      this.loadingService.show();
+    }
 
     this.advisorService.getAdvisors().pipe(
       switchMap((response) => {
@@ -92,14 +109,19 @@ export class AdvisorListComponent implements OnInit {
         }
 
         return of(null);
+      }),
+      finalize(() => {
+        if (showLoader) {
+          this.loadingService.hide();
+        }
+        this.loadingAdvisors = false;
       })
     ).subscribe({
       next: () => {},
       error: () => {
-        this.toastService.show('error', 'Advisor Error', 'Unable to fetch advisor list.');
-      },
-      complete: () => {
-        this.loadingService.hide();
+        if (showLoader) {
+          this.toastService.show('error', 'Advisor Error', 'Unable to fetch advisor list.');
+        }
       },
     });
   }
@@ -323,5 +345,19 @@ export class AdvisorListComponent implements OnInit {
     }
 
     return this.advisors.find((advisor) => Number(advisor.id) === Number(currentUser.id)) ?? null;
+  }
+
+  private startAutoRefresh(): void {
+    if (this.advisorsAutoRefreshTimer) {
+      clearInterval(this.advisorsAutoRefreshTimer);
+    }
+
+    this.advisorsAutoRefreshTimer = setInterval(() => {
+      if (document.hidden) {
+        return;
+      }
+
+      this.loadAdvisors(false);
+    }, 15000);
   }
 }
