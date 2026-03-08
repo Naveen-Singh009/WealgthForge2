@@ -10,6 +10,8 @@ export class ReusableCardComponent {
   @Input() title = '';
   @Input() value: string | number | null = '';
   @Input() subtitle = '';
+  @Input() subtitleHighlight = '';
+  @Input() subtitleHighlightClass = '';
   @Input() trendClass = '';
   @Input() icon = 'bi-graph-up-arrow';
 }

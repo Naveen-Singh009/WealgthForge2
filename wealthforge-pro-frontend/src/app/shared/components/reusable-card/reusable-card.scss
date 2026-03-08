@@ -39,6 +39,11 @@
     font-size: 0.9rem;
   }
 
+  .subtitle-highlight {
+    margin-left: 0.25rem;
+    font-weight: 600;
+  }
+
   &.profit .value,
   &.profit i {
     color: var(--wf-success);

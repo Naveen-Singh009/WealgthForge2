@@ -148,4 +148,40 @@ export class PortfolioDetailComponent implements OnInit {
     });
   }
 
+  get profitLossPercentageDisplay(): string {
+    const data = this.portfolio;
+    if (!data) {
+      return '0.00%';
+    }
+
+    const investedAmount = Number(data.totalInvestment ?? data.balance ?? 0);
+    const profitLossAmount = Number(data.profitLoss ?? 0);
+
+    if (!Number.isFinite(investedAmount) || investedAmount <= 0 || !Number.isFinite(profitLossAmount)) {
+      return '0.00%';
+    }
+
+    const percentage = (profitLossAmount / investedAmount) * 100;
+    const absolute = Math.abs(percentage).toFixed(2);
+
+    if (percentage > 0) {
+      return `+${absolute}%`;
+    }
+    if (percentage < 0) {
+      return `-${absolute}%`;
+    }
+    return '0.00%';
+  }
+
+  get profitLossPercentageClass(): string {
+    const profitLossAmount = Number(this.portfolio?.profitLoss ?? 0);
+    if (profitLossAmount > 0) {
+      return 'text-profit';
+    }
+    if (profitLossAmount < 0) {
+      return 'text-loss';
+    }
+    return '';
+  }
+
 }

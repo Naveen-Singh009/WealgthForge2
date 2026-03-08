@@ -101,6 +101,36 @@ export class InvestorDashboardComponent implements OnInit {
     return formattedValue;
   }
 
+  get pnlPercentageDisplay(): string {
+    const investedAmount = Number(this.totalInvestment ?? 0);
+    const pnlAmount = Number(this.pnl ?? 0);
+
+    if (!Number.isFinite(investedAmount) || investedAmount <= 0 || !Number.isFinite(pnlAmount)) {
+      return '0.00%';
+    }
+
+    const percentage = (pnlAmount / investedAmount) * 100;
+    const absolute = Math.abs(percentage).toFixed(2);
+
+    if (percentage > 0) {
+      return `+${absolute}%`;
+    }
+    if (percentage < 0) {
+      return `-${absolute}%`;
+    }
+    return '0.00%';
+  }
+
+  get pnlPercentageClass(): string {
+    if (this.pnl > 0) {
+      return 'text-profit';
+    }
+    if (this.pnl < 0) {
+      return 'text-loss';
+    }
+    return '';
+  }
+
   private loadHoldingSnapshot(): void {
     if (this.portfolios.length === 0) {
       this.holdingsBySymbol = {};

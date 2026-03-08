@@ -6,5 +6,10 @@
     </div>
     <i class="bi" [ngClass]="icon"></i>
   </div>
-  <p class="subtitle">{{ subtitle | emptyState: 'No data available' }}</p>
+  <p class="subtitle">
+    <span>{{ subtitle | emptyState: 'No data available' }}</span>
+    <span *ngIf="subtitleHighlight.trim().length > 0" class="subtitle-highlight" [ngClass]="subtitleHighlightClass">
+      {{ subtitleHighlight }}
+    </span>
+  </p>
 </div>

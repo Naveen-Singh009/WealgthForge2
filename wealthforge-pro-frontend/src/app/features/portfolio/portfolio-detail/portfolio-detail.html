@@ -15,7 +15,7 @@
       <app-reusable-card title="Investment" [value]="(data.totalInvestment ?? data.balance) | currency:'INR':'symbol':'1.0-0'" subtitle="Total allocated" icon="bi-currency-rupee"></app-reusable-card>
     </div>
     <div class="col-md-4">
-      <app-reusable-card title="P/L" [value]="(data.profitLoss ?? 0) | currency:'INR':'symbol':'1.0-0'" [trendClass]="(data.profitLoss ?? 0) >= 0 ? 'profit' : 'loss'" subtitle="Overall return" icon="bi-graph-up-arrow"></app-reusable-card>
+      <app-reusable-card title="P/L" [value]="(data.profitLoss ?? 0) | currency:'INR':'symbol':'1.0-0'" [trendClass]="(data.profitLoss ?? 0) >= 0 ? 'profit' : 'loss'" subtitle="Overall return" [subtitleHighlight]="'(' + profitLossPercentageDisplay + ')'" [subtitleHighlightClass]="profitLossPercentageClass" icon="bi-graph-up-arrow"></app-reusable-card>
     </div>
   </div>
 
